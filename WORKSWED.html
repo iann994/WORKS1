@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Ada Wang | Portfolio - 狗狗互动（跳跳爱心版）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <style>
+        /* 確保 GIF 像素清晰 */
+        #animated-dog-gif {
+            width: 64px; 
+            height: auto;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            display: block;
+            will-change: transform; 
+            transition: transform 0.3s ease;
+        }
+
+        #dog-move-container {
+            position: absolute;
+            z-index: 100;
+            pointer-events: none;
+            left: 0;
+            top: 0;
+            transform: translate(30px, 30px);
+            display: flex;
+            align-items: flex-start;
+        }
+
+        /* 水平翻轉類 (讓狗狗面朝左) */
+        .flip-horizontal {
+            transform: scaleX(-1);
+        }
+
+        /* 骨頭樣式 */
+        #flying-bone {
+            position: fixed;
+            font-size: 28px;
+            z-index: 200;
+            pointer-events: none;
+            opacity: 0;
+            margin-left: -14px;
+            margin-top: -14px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        /* 對話框打字光標效果 */
+        #typewriter-text::after {
+            content: '|';
+            animation: blink 1s infinite;
+            margin-left: 2px;
+            color: #9ca3af;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .hide-cursor#typewriter-text::after {
+            display: none;
+        }
+
+        /* 漂浮愛心 */
+        .floating-heart {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 300;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+            will-change: transform, opacity;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900 overflow-x-hidden">
+
+    <div id="flying-bone">🦴</div>
+
+    <section id="home" class="min-h-screen flex items-center pt-24 relative">
+        <div class="container mx-auto px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="max-w-2xl">
+                    <h1 class="text-7xl font-bold mb-6">Hi, I'm Ada Wang 👋</h1>
+                    <p class="text-xl text-gray-600 mb-8">A designer crafting digital experiences.</p>
+                    
+                    <div class="flex space-x-6 relative mt-12">
+                        <div class="w-32 h-32 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center bg-gray-50 relative">
+                            <div id="dog-move-container">
+                                <img id="animated-dog-gif" src="GIFDOG.gif" alt="Walking Dog">
+                                
+                                <div id="dog-bubble" class="ml-4 opacity-0 scale-95 origin-left transition-all duration-300 pointer-events-auto">
+                                    <div class="w-64 bg-gray-100 border border-gray-200 p-4 rounded-lg shadow-sm relative">
+                                        <div class="text-[10px] tracking-widest text-gray-400 mb-1 font-bold">🐕 狗狗悄悄話</div>
+                                        <div id="typewriter-text" class="text-sm text-gray-700 leading-relaxed min-h-[3em]"></div>
+                                        <div class="flex justify-end mt-2">
+                                            <button id="bubble-ok" class="px-3 py-1 bg-gray-200 text-[10px] font-bold rounded hover:bg-gray-300 transition-colors cursor-pointer relative z-10">OK ! 給我骨頭 🦴</button>
+                                        </div>
+                                        <div class="absolute left-0 top-6 -translate-x-full w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-gray-100 border-b-[6px] border-b-transparent"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-400 absolute bottom-1">🐕 Dog's House</span>
+                        </div>
+                        <div class="w-32 h-32 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300 text-sm">
+                            🎾 玩具區
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="works" class="py-40 bg-gray-50">
+        <div class="container mx-auto px-8">
+            <h2 id="works-title" class="text-5xl font-bold mb-20 text-center">Selected Works</h2>
+            <div class="h-96 border border-gray-200 rounded-xl bg-white flex items-center justify-center">
+                <p class="text-gray-400 italic">✨ 狗狗會帶著骨頭跑到這裡，吃完骨頭會開心跳跳 ✨</p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const dogContainer = document.querySelector('#dog-move-container');
+            const dogGif = document.querySelector('#animated-dog-gif');
+            const dogBubble = document.querySelector('#dog-bubble');
+            const textTarget = document.querySelector('#typewriter-text');
+            const flyingBone = document.querySelector('#flying-bone');
+            const okButton = document.querySelector('#bubble-ok');
+            
+            const fullText = "嘿嘿～我是貪吃小狗！給我一根香噴噴的骨頭，我就開心跳跳給你看！🐶💨 (點OK送我骨頭吧)";
+            let typingTimer = null;
+            let isTyped = false;
+            let isJumping = false;      // 防止跳躍動畫重疊
+            
+            // ----- 輔助：清除愛心 -----
+            function clearFloatingHearts() {
+                document.querySelectorAll('.floating-heart').forEach(heart => heart.remove());
+            }
+            
+            // ----- 簡潔的狗狗跳一下 + 愛心特效（保證不會倒過來）-----
+            function dogJumpWithHeart() {
+                return new Promise((resolve) => {
+                    if (!dogGif || isJumping) {
+                        resolve();
+                        return;
+                    }
+                    isJumping = true;
+                    
+                    // 清除多餘愛心
+                    clearFloatingHearts();
+                    
+                    // 獲取狗狗頭頂位置（用於愛心）
+                    const rect = dogGif.getBoundingClientRect();
+                    const heartX = rect.left + rect.width / 2;
+                    const heartY = rect.top - 8;
+                    
+                    // 建立愛心元素
+                    const heart = document.createElement('div');
+                    heart.className = 'floating-heart';
+                    heart.textContent = '💓';
+                    heart.style.left = `${heartX}px`;
+                    heart.style.top = `${heartY}px`;
+                    heart.style.opacity = '1';
+                    heart.style.transform = 'scale(0.6)';
+                    document.body.appendChild(heart);
+                    
+                    // 愛心上飄 + 淡出
+                    gsap.to(heart, {
+                        duration: 0.9,
+                        y: -45,
+                        opacity: 0,
+                        scale: 1.5,
+                        ease: "power2.out",
+                        onComplete: () => heart.remove()
+                    });
+                    
+                    // 狗狗跳一下：向上彈跳再落回（不旋轉、不翻轉，保持原方向）
+                    gsap.to(dogGif, {
+                        duration: 0.2,
+                        y: -18,
+                        ease: "power1.out",
+                        onComplete: () => {
+                            gsap.to(dogGif, {
+                                duration: 0.2,
+                                y: 0,
+                                ease: "bounce.out",
+                                onComplete: () => {
+                                    isJumping = false;
+                                    resolve();
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+            
+            // ----- 打字機（彈窗出現）-----
+            function startTypewriter() {
+                if (isTyped) return;
+                isTyped = true;
+                
+                dogBubble.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+                dogBubble.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
+                
+                let i = 0;
+                textTarget.textContent = "";
+                textTarget.classList.remove('hide-cursor');
+                
+                if (typingTimer) clearInterval(typingTimer);
+                typingTimer = setInterval(() => {
+                    if (i < fullText.length) {
+                        textTarget.textContent += fullText.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(typingTimer);
+                        textTarget.classList.add('hide-cursor');
+                    }
+                }, 45);
+            }
+            
+            // ----- 重置對話框（滾動回去時）-----
+            function resetTypewriter() {
+                if (typingTimer) {
+                    clearInterval(typingTimer);
+                    typingTimer = null;
+                }
+                isTyped = false;
+                dogBubble.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+                dogBubble.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+                if (textTarget) textTarget.textContent = "";
+                textTarget?.classList.add('hide-cursor');
+                
+                // 清除跳躍中狀態，防止卡住
+                isJumping = false;
+                gsap.killTweensOf(dogGif);
+                gsap.set(dogGif, { y: 0, clearProps: "transform" });
+                clearFloatingHearts();
+            }
+            
+            // ----- GSAP 滾動路徑（完全保留原有移動軌跡）-----
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: "#home",
+                    start: "top top",
+                    endTrigger: "#works",
+                    end: "top 25%", 
+                    scrub: 1,
+                    onLeaveBack: resetTypewriter
+                }
+            });
+            
+            tl
+            .to(dogContainer, {
+                x: 200,
+                y: 50,
+                duration: 2,
+                onUpdate: () => dogGif.classList.remove('flip-horizontal')
+            })
+            .to(dogContainer, {
+                x: "60vw",
+                y: "60vh",
+                duration: 4
+            })
+            .to(dogContainer, {
+                x: "calc(50vw + 160px)", 
+                y: "110vh", 
+                duration: 2,
+                onStart: () => {
+                    dogGif.classList.add('flip-horizontal'); // 面向左邊
+                },
+                onComplete: startTypewriter,
+                onReverseComplete: () => {
+                    dogGif.classList.remove('flip-horizontal');
+                    resetTypewriter();
+                }
+            });
+            
+            // ----- OK 按鈕：關閉對話框 → 飛骨頭 → 狗狗跳躍 + 愛心 -----
+            okButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // 只當對話框可見且未在跳躍中才觸發
+                const isVisible = dogBubble.classList.contains('opacity-100');
+                if (!isVisible || isJumping) return;
+                
+                // 1. 關閉對話框
+                dogBubble.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+                dogBubble.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+                
+                // 2. 獲取起點（按鈕）與終點（狗狗嘴巴附近）
+                const btnRect = okButton.getBoundingClientRect();
+                const dogRect = dogGif.getBoundingClientRect();
+                const startX = btnRect.left + btnRect.width / 2;
+                const startY = btnRect.top + btnRect.height / 2;
+                const targetX = dogRect.left + dogRect.width / 2;
+                const targetY = dogRect.top + dogRect.height / 2 - 6;
+                
+                // 3. 骨頭起飛
+                gsap.set(flyingBone, {
+                    x: startX,
+                    y: startY,
+                    opacity: 1,
+                    scale: 0.5,
+                    rotation: 0
+                });
+                
+                gsap.to(flyingBone, {
+                    duration: 0.7,
+                    x: targetX,
+                    y: targetY,
+                    scale: 1.4,
+                    rotation: 400,
+                    ease: "back.out(1.2)",
+                    onComplete: () => {
+                        // 骨頭命中，隱藏
+                        gsap.to(flyingBone, {
+                            duration: 0.15,
+                            opacity: 0,
+                            scale: 0.2,
+                            onComplete: () => {
+                                gsap.set(flyingBone, { opacity: 0 });
+                                // 狗狗開心跳 + 愛心（簡潔版，不會倒過來）
+                                dogJumpWithHeart();
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // 確保初始狀態乾淨
+            resetTypewriter();
+        });
+    </script>
+</body>
+</html>
